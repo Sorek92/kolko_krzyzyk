@@ -59,7 +59,7 @@ class KolkoKrzyzyk : public Player{
             {
                 {1,2},
                 {2,2},
-                {2,2}},
+                {3,2}},
             {
                 {1,3},
                 {2,3},
@@ -85,12 +85,14 @@ class KolkoKrzyzyk : public Player{
         char znak1,znak2;
         Player *player1;
         Player *player2;
+        string napis;
+        int proba;
 
         KolkoKrzyzyk(string imie1,string imie2){
             stan = 0;
             plansza = {{'*', '*', '*'},{'*','*','*'},{'*','*','*'}};
             losuj_znak();
-
+            proba = 0;
             player1 = new Player(imie1,this->znak1);
             player2 = new Player(imie2,this->znak2);
 
@@ -147,13 +149,14 @@ class KolkoKrzyzyk : public Player{
 
         void aktualizuj_plansze(int x, int y, char znak){
             this -> plansza[y-1][x-1] = znak;
+            this -> proba ++;
         }
 
         bool sprawdz_wygrana(char znak){
 
             vector<vector<char>> kopia;
             kopia = this->plansza;
-
+            
             int tempx,tempy;
             int licznik = 0;
             bool zwroc = false;
@@ -162,9 +165,11 @@ class KolkoKrzyzyk : public Player{
                 for(int j=0; j< this->wygranaX[i].size(); j++){
                     tempx = this->wygranaX[i][j][0];
                     tempy = this->wygranaX[i][j][1];
-                     
+                    //cout << "sprawdzam x: " << tempx << " y: " << tempy << endl;
+                    //cout << "pole " << kopia[tempy-1][tempx-1] << " zn : " << znak << endl;
                     if(kopia[tempx-1][tempy-1] == znak){
-                          licznik++;
+                        licznik++;                   
+                        
                     }else{
                         //licznik--;
                         //cout << "x: " << tempx << " y: "<< tempy;
@@ -173,6 +178,7 @@ class KolkoKrzyzyk : public Player{
                     }
                     
                 }
+                //cout << "----------" << endl;
                 if(licznik == 3){
                     zwroc = true;
                 }
@@ -199,7 +205,7 @@ int main(){
 
 
     while(1){
-
+        if(Gra.proba >= 9) Gra.stan = 6;
         switch(Gra.stan){
             case 0: {
 
@@ -267,13 +273,17 @@ int main(){
                     break;
             case 4: 
                 // wyswietl plansze
-            cout << "wygrał gracz nr 1"<< endl;
+                Gra.rysuj_plansze();
+                    cout << "wygrał gracz nr 1"<< endl;
                     exit(0);
                     break;
-            case 5: cout << "wygrał gracz nr 2"<< endl;
+            case 5: Gra.rysuj_plansze();
+                    cout << "wygrał gracz nr 2"<< endl;
                     exit(0);
                     break;
-            case 6: cout << "remis" << endl;
+            case 6: Gra.rysuj_plansze();
+                    cout << "remis" << endl;
+                    exit(0);
                     break;
 
         }
