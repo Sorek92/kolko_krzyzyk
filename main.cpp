@@ -31,6 +31,7 @@ class Player{
 
 class KolkoKrzyzyk : public Player{
     private :
+        // wygrane pola 
         vector<vector<vector<int>>> wygranaX = {
             {
                 {1,1},
@@ -66,7 +67,9 @@ class KolkoKrzyzyk : public Player{
                 {3,3}},
 
         };
-
+        // pola planszy gry
+        vector<vector<char>> plansza = {{'*', '*', '*'},{'*','*','*'},{'*','*','*'}};
+        // losowanie znaku dla graczy
         void losuj_znak(){
             srand((unsigned)time(0));
             if(rand()%2+1 == 1){
@@ -79,29 +82,81 @@ class KolkoKrzyzyk : public Player{
         }
 
     public:
-        int stan;
-        int runda;
-        vector<vector<char>> plansza;
+        int stan; 
         char znak1,znak2;
         Player *player1;
         Player *player2;
+        Player *player; // aktywny gracz
         string napis;
         int proba;
+        
 
         KolkoKrzyzyk(string imie1,string imie2){
-            stan = 0;
-            plansza = {{'*', '*', '*'},{'*','*','*'},{'*','*','*'}};
+            //stan = 0;
             losuj_znak();
-            proba = 0;
+            this -> proba = 0;
             player1 = new Player(imie1,this->znak1);
             player2 = new Player(imie2,this->znak2);
 
         }
 
-        void czysc_plansze(){
+        void init(){
+            this -> czysc_ekran();
+            this -> rysuj_plansze();
+
+            //zaczyna znak 'O'
+            if(this -> player1->znak == 'O'){
+                player = player1;
+
+            }else{
+                player = player2;
+            }
+        }
+
+        void play(){
+            wpisz_pozycje();
+        }
+
+        void wpisz_pozycje(){
+            
+            cout << "Kolej gracza: " << this->player->imie << endl;
+            int x,y;
+            do{
+                cout << "Wpisz pozycje x: " ;
+                cin >> x;
+                cout << "Wpisz pozycje y: " ;
+                cin >> y;
+                if(!(x>=0 || x<=3) || !(y>=0 || y<=3)){
+                    cout << "Błąd -> x:" << x << " y:" << y << endl;
+                    continue;
+                }
+                else{
+                    this->player->pozycjaX = x;
+                    this->player->pozycjaY = y;
+
+                }
+
+            }while(!this->sprawdz_pozycje());
+            this->czysc_ekran();
+            this->rysuj_plansze();
+            this->zmien_playera();
+            this->play();
+        }
+
+        void zmien_playera(){
+            if(player == player1){
+                player = player2;
+            }else{
+                player = player1;
+            }
+        }
+
+        // czysc ekran konsoli
+        void czysc_ekran(){
             cout << "\x1B[2J\x1B[H";
         }
 
+        // rysuj plansze gry
         void rysuj_plansze(){
 
             string tabulacja = "\t\t\t";
@@ -139,21 +194,39 @@ class KolkoKrzyzyk : public Player{
             cout << "\t\t  -------------" << endl;
         }
 
-        bool sprawdz_pozycje(int x, int y){
-            if(this->plansza[y-1][x-1] == '*'){
+        // sprawdzanie pozycji w planszy czy zajeta
+        bool sprawdz_pozycje(){
+            
+            if(this->plansza[player->pozycjaY-1][player->pozycjaX-1] == '*'){
+                this->aktualizuj_plansze();
                 return true;
             }else{
                 return false;
             }
+
+            
         }
 
-        void aktualizuj_plansze(int x, int y, char znak){
-            this -> plansza[y-1][x-1] = znak;
-            this -> proba ++;
+        // aktualizacja planszy - wpisanie znaku 
+        void aktualizuj_plansze(){
+            this -> plansza[this->player->pozycjaY-1][this->player->pozycjaX-1] = this->player->znak;
+            this -> czysc_ekran();
+            this -> rysuj_plansze();
+            //cout << "sprawdzam wygraną ..." << endl;
+            if(this -> sprawdz_wygrana()){
+                wyswietl_wygrana();
+            }else{
+                //cout << "kolejna próba" << endl;
+                this -> proba ++;
+                this -> zmien_playera();
+                this -> play();
+            }
+            
         }
 
-        bool sprawdz_wygrana(char znak){
-
+        // sprawdzenie czy ktos juz wygrał
+        bool sprawdz_wygrana(){
+            znak = this->player->znak;
             vector<vector<char>> kopia;
             kopia = this->plansza;
             
@@ -187,7 +260,19 @@ class KolkoKrzyzyk : public Player{
             return zwroc;
 
         }
-   
+
+
+        void wyswietl_wygrana(){
+            this->czysc_ekran();
+            this->rysuj_plansze();
+            cout << "Wygrał gracz: " << this->player->imie << " o znaku :" << this->player->znak << endl;
+            exit(0);
+        }
+
+        ~KolkoKrzyzyk(){
+            cout << "zwalnianie pamieci";
+        }
+
 };
 
 
@@ -203,94 +288,12 @@ int main(){
 
     KolkoKrzyzyk Gra(p1,p2);
 
+    Gra.init();
 
     while(1){
-        if(Gra.proba >= 9) Gra.stan = 6;
-        switch(Gra.stan){
-            case 0: {
-
-                    Gra.czysc_plansze();
-                    Gra.rysuj_plansze();
-
-                    //zaczyna znak 'O'
-                    if(Gra.player1->znak == 'O'){
-                        Gra.stan = 1;
-                    }else{
-                        Gra.stan = 2;
-                    }
-                    break;
-            }
-            case 1: {
-                    
-                    cout << "Kolej playera 1 " << endl;
-                    do{
-                        cout << "Wpisz pozycje x: " ;
-                        cin >> Gra.player1->pozycjaX;
-                        cout << "Wpisz pozycje y: " ;
-                        cin >> Gra.player1->pozycjaY;
-
-                    }while(!Gra.sprawdz_pozycje(Gra.player1->pozycjaX,Gra.player1->pozycjaY));
-
-                    Gra.aktualizuj_plansze(Gra.player1->pozycjaX,Gra.player1->pozycjaY,Gra.player1->znak);
-                    Gra.czysc_plansze();
-                    Gra.rysuj_plansze();
-                    if(Gra.sprawdz_wygrana(Gra.player1->znak)){
-                        Gra.czysc_plansze();
-                        Gra.stan = 4;
-                    }else{
-                        Gra.stan = 2;
-                    }
-                   
-
-                    break;
-            }
-            case 2: {
-                    cout << "\t\t\t\tKolej playera 2 " << endl;
-                    do{
-                        cout << "\t\t\t\tWpisz pozycje x: " ;
-                        cin >> Gra.player2->pozycjaX;
-                        cout << "\t\t\t\tWpisz pozycje y: " ;
-                        cin >> Gra.player2->pozycjaY;
-
-                    }while(!Gra.sprawdz_pozycje(Gra.player2->pozycjaX,Gra.player2->pozycjaY));
-
-                    Gra.aktualizuj_plansze(Gra.player2->pozycjaX,Gra.player2->pozycjaY,Gra.player2->znak);
-                    Gra.czysc_plansze();
-                    Gra.rysuj_plansze();
-
-                    if(Gra.sprawdz_wygrana(Gra.player2->znak)){
-                        Gra.czysc_plansze();
-                        Gra.stan = 5;
-                    }else{
-                        Gra.stan = 1;
-                    }
-
-                    
-
-                    break;
-            }
-            case 3: cout << "wpisanie pola" << endl;
-                    break;
-            case 4: 
-                // wyswietl plansze
-                Gra.rysuj_plansze();
-                    cout << "wygrał gracz nr 1"<< endl;
-                    exit(0);
-                    break;
-            case 5: Gra.rysuj_plansze();
-                    cout << "wygrał gracz nr 2"<< endl;
-                    exit(0);
-                    break;
-            case 6: Gra.rysuj_plansze();
-                    cout << "remis" << endl;
-                    exit(0);
-                    break;
-
-        }
+        Gra.play();
     }
-
-
-
+    
     return 0;
 }
 
