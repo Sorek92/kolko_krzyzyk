@@ -97,6 +97,12 @@ class KolkoKrzyzyk : public Player{
             this -> proba = 0;
             player1 = new Player(imie1,this->znak1);
             player2 = new Player(imie2,this->znak2);
+            // cout << this->player1->imie <<"adresy : x-"<< &this->player1->pozycjaX << " y-"<< &this->player1->pozycjaY <<
+            //         " i-" << &this->player1->imie << endl;
+            //         getchar();
+            // cout << this->player2->imie <<"adresy : x-"<< &this->player2->pozycjaX << " y-"<< &this->player2->pozycjaY <<
+            //         " i-" << &this->player2->imie << endl;
+            //         getchar();
 
         }
 
@@ -111,6 +117,9 @@ class KolkoKrzyzyk : public Player{
             }else{
                 player = player2;
             }
+            //cout << this->player->imie <<"adresy : x-"<< &this->player->pozycjaX << " y-"<< &this->player->pozycjaY <<
+            //       " i-" << &this->player->imie << endl;
+            //        getchar();
         }
 
         void play(){
@@ -126,14 +135,15 @@ class KolkoKrzyzyk : public Player{
                 cin >> x;
                 cout << "Wpisz pozycje y: " ;
                 cin >> y;
-                if(!(x>=0 || x<=3) || !(y>=0 || y<=3)){
-                    cout << "Błąd -> x:" << x << " y:" << y << endl;
-                    continue;
-                }
-                else{
+                // sprawdz czy napewno wpisane sa dobre współrzedne 
+                if((x>=0 || x<=3) && (y>=0 || y<=3)){
                     this->player->pozycjaX = x;
                     this->player->pozycjaY = y;
-
+                    
+                }
+                else{
+                    cout << "Błąd -> x:" << x << " y:" << y << endl;
+                    continue;
                 }
 
             }while(!this->sprawdz_pozycje());
@@ -197,7 +207,7 @@ class KolkoKrzyzyk : public Player{
         // sprawdzanie pozycji w planszy czy zajeta
         bool sprawdz_pozycje(){
             
-            if(this->plansza[player->pozycjaY-1][player->pozycjaX-1] == '*'){
+            if(this->plansza[this->player->pozycjaY-1][this->player->pozycjaX-1] == '*'){
                 this->aktualizuj_plansze();
                 return true;
             }else{
